@@ -38,7 +38,12 @@ class WPTable_Custom_Filter{
         // adding custom columns
         add_filter( "manage_{$this->cpt_slug}_posts_columns", [ $this, 'set_custom_edit_book_columns' ] );
         add_action( "manage_{$this->cpt_slug}_posts_custom_column" , [ $this, 'custom_book_column' ], 10, 2 );
-        
+
+        /***
+         * *************
+         * Intigrating search with Meta
+         */
+        add_action( 'pre_get_posts', [ $this, 'manupulate_book_query'] );
     }
 
     /**
@@ -155,6 +160,25 @@ class WPTable_Custom_Filter{
             case 'book_context' :
                 echo get_post_meta( $post_id, $this->book_context_key, true );
         }
+    }
+
+    function manupulate_book_query( $query ){
+        $screen = get_current_screen();
+
+        if ( is_admin()  && is_post_type_archive($this->cpt_slug) && !empty( $_REQUEST['s'] )){
+
+            $query->set( 'meta_query', 
+                [
+                    'relation' => 'OR',
+                    [
+                        'key'     => $this->book_context_key,
+                        'compare' => 'LIKE',
+                        'value'   =>  $_REQUEST['s'],
+                    ]
+                ]
+            );
+        }
+  
     }
 
 }
