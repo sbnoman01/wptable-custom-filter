@@ -163,7 +163,6 @@ class WPTable_Custom_Filter{
     }
 
     function manupulate_book_query( $query ){
-        $screen = get_current_screen();
 
         if ( is_admin()  && is_post_type_archive($this->cpt_slug) && !empty( $_REQUEST['s'] )){
 
