@@ -43,7 +43,7 @@ class WPTable_Custom_Filter{
          * *************
          * Intigrating search with Meta
          */
-        add_action( 'pre_get_posts', [ $this, 'manupulate_book_query'] );
+        add_action( 'pre_get_posts', [ $this, 'manupulate_book_query'] , 99);
     }
 
     /**
@@ -165,23 +165,36 @@ class WPTable_Custom_Filter{
     function manupulate_book_query( $query ){
 
         if ( is_admin()  && is_post_type_archive($this->cpt_slug) && !empty( $_REQUEST['s'] )){
-
+            
+            
             $query->set( 'meta_query', 
                 [
-                    'relation' => 'OR',
                     [
                         'key'     => $this->book_context_key,
                         'compare' => 'LIKE',
-                        'value'   =>  $_REQUEST['s'],
+                        'value'   => $_REQUEST['s'] ,
                     ]
                 ]
             );
+            // $query->set( 's', '' );
+
+            add_filter( 'get_meta_sql', function( $sql )
+            {
+                global $wpdb;
+
+                static $nr = 0;
+                if( 0 != $nr++ ) return $sql;
+
+                $sql['where'] = mb_eregi_replace( '^ AND', ' OR', $sql['where']);
+
+                return $sql;
+            });
+
         }
+        
   
     }
 
 }
 
 new WPTable_Custom_Filter();
-
-
